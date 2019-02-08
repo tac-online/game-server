@@ -1,0 +1,67 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.bmuschko.docker-java-application' version '4.3.0'
+}
+
+mainClassName = 'de.johanneswirth.tac.gameserver.GameServerApp'
+
+group 'de.johannes-wirth'
+version '0.1'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    jcenter()
+    mavenLocal()
+}
+
+
+
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'io.dropwizard', name: 'dropwizard-core', version: '1.3.8'
+    compile group: 'io.dropwizard', name: 'dropwizard-client', version: '1.3.8'
+    compile group: 'com.liveperson', name: 'dropwizard-websockets', version: '1.3.2'
+    compile group: 'io.dropwizard.modules', name: 'dropwizard-discovery', version: '1.3.0-1'
+    compile group: 'de.johannes-wirth', name: 'tac-backend-common', version: '0.1'
+    compile group: 'com.oracle.kv', name: 'oracle-nosql-client', version: '4.4.6'
+}
+
+jar {
+    from(configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }) {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+    manifest { attributes 'Main-Class': 'de.johanneswirth.tac.gameserver.GameServerApp' }
+}
+
+task copyConfig(type: Copy) {
+    from file("config.yml")
+    into file("build/install/")
+}
+
+task excludeLibraries(type: Delete) {
+    delete fileTree(dir: "build/docker/${rootProject.name}/lib")
+}
+dockerBuildImage.dependsOn excludeLibraries
+dockerBuildImage.dependsOn copyConfig
+
+docker {
+    javaApplication {
+        baseImage = 'java:openjdk-8-jre'
+        maintainer = 'Johannes Wirth "johannes-wirth@posteo.de"'
+        ports = [8080, 8081]
+        tag = rootProject.name + ":" + version
+        exec {
+            defaultCommand 'server', 'config.yml'
+            entryPoint '/tac-game-server/bin/tac-game-server'
+        }
+    }
+}
+
+
+dockerCreateDockerfile.addFile('config.yml', 'config.yml')
