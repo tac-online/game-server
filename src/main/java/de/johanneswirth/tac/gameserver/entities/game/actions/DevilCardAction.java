@@ -1,11 +1,18 @@
 package de.johanneswirth.tac.gameserver.entities.game.actions;
 
 import de.johanneswirth.tac.gameserver.entities.game.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.logging.Level;
-import static de.johanneswirth.tac.common.Utils.LOGGER;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 public class DevilCardAction extends Action {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevilCardAction.class);
+
+    @Valid
+    @NotNull
     private Card devilCard;
 
     public DevilCardAction() {
@@ -18,13 +25,13 @@ public class DevilCardAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.log(Level.INFO, "Invalid Action");
+            LOGGER.debug("Invalid Action");
             return false;
         }
         if (game.devilCardAllowed(devilCard)) {
             return true;
         } else {
-            LOGGER.log(Level.INFO, "DevilCardAction not allowed");
+            LOGGER.debug("DevilCardAction not allowed");
             return false;
         }
     }

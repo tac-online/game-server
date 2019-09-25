@@ -1,63 +1,63 @@
 package de.johanneswirth.tac.gameserver.services;
 
+import com.codahale.metrics.annotation.ExceptionMetered;
+import com.codahale.metrics.annotation.Timed;
+import de.johanneswirth.tac.common.IStatus;
 import de.johanneswirth.tac.common.Secured;
-import de.johanneswirth.tac.common.Status;
+import de.johanneswirth.tac.gameserver.data.GameDAO;
 import de.johanneswirth.tac.gameserver.data.NoSQLDatabase;
 import de.johanneswirth.tac.gameserver.entities.game.Game;
+import org.jdbi.v3.core.Jdbi;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+
 import java.util.List;
-import java.util.logging.Level;
+import static de.johanneswirth.tac.common.SuccessStatus.OK;
 
-import static de.johanneswirth.tac.common.ServiceUtils.getResponse;
-import static de.johanneswirth.tac.common.Utils.LOGGER;
-
-@Path("game/start")
+@Path("games")
 public class GameStartService {
 
-    private final String METHODS = "POST";
+    private GameDAO dao;
 
     private NoSQLDatabase database;
 
-    public GameStartService(NoSQLDatabase database) {
+    public GameStartService(NoSQLDatabase database, Jdbi jdbi) {
         this.database = database;
+        this.dao = jdbi.onDemand(GameDAO.class);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Secured
+    @Valid
+    @NotNull
+    @Timed
+    @ExceptionMetered
+    public IStatus<List<Long>> getGames(@Context SecurityContext securityContext) {
+        long userID = Long.parseLong(securityContext.getUserPrincipal().getName());
+        return OK(dao.getGames(userID), System.currentTimeMillis());
     }
 
     @POST
+    @Produces(MediaType.APPLICATION_JSON)
     @Secured
-    @Consumes({ MediaType.APPLICATION_JSON} )
-    @Produces({ MediaType.APPLICATION_JSON} )
-    public Response reset(List<String> players, @Context SecurityContext context) {
-        if (players == null)
-            return getResponse(Status.ILLEGAL_PARAMETERS, METHODS);
-        if (!players.contains(context.getUserPrincipal().getName()))
-            return getResponse(Status.ILLEGAL_PARAMETERS, METHODS);
-        Game game = new Game(players.toArray(new String[0]));
-        String gameID = calcGameID(players);
+    @Valid
+    @NotNull
+    @Timed
+    @ExceptionMetered
+    public IStatus<Long> createGame(@Context SecurityContext securityContext) {
+        long userID = Long.parseLong(securityContext.getUserPrincipal().getName());
+        long gameID = dao.createNewGame(userID);
+        Game game = new Game();
         database.saveGame(game, gameID);
-        return getResponse(Status.OK(gameID), METHODS);
-    }
-
-    private String calcGameID(List<String> players) {
-        String base = players.stream().reduce(String::concat).get() + System.currentTimeMillis();
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-512");
-            digest.update(base.getBytes());
-            base = new String(digest.digest());
-        } catch (NoSuchAlgorithmException e) {
-            LOGGER.log(Level.SEVERE, "", e);
-        }
-        return base;
+        return OK(gameID,0);
     }
 
     @OPTIONS
-    public Response options() {
-        return getResponse(null, METHODS);
-    }
+    public void options() {}
 }

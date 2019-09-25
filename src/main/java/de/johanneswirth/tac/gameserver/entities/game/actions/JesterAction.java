@@ -1,11 +1,14 @@
 package de.johanneswirth.tac.gameserver.entities.game.actions;
 
 import de.johanneswirth.tac.gameserver.entities.game.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.logging.Level;
-import static de.johanneswirth.tac.common.Utils.LOGGER;
 
 public class JesterAction extends Action {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JesterAction.class);
+
     public JesterAction() {
     }
 
@@ -16,7 +19,7 @@ public class JesterAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.log(Level.INFO, "Invalid Action");
+            LOGGER.debug("Invalid Action");
             return false;
         }
         // jester is always allowed

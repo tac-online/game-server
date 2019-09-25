@@ -1,11 +1,21 @@
 package de.johanneswirth.tac.gameserver.entities.game.actions;
 
 import de.johanneswirth.tac.gameserver.entities.game.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.logging.Level;
-import static de.johanneswirth.tac.common.Utils.LOGGER;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 
 public abstract class OpenAction extends Action {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenAction.class);
+
+    @NotNull
+    @Min(0)
+    @Max(3)
     private int baseNumber;
     private int playercaptured = -1;
 
@@ -22,12 +32,12 @@ public abstract class OpenAction extends Action {
         Board board = game.getBoard();
         Base base = board.getBases()[baseNumber];
         Field field = board.getTrackField(16 * baseNumber);
-        LOGGER.log(Level.INFO, "Moving marble from base " + baseNumber + " to " + field);
+        LOGGER.debug("Moving marble from base " + baseNumber + " to " + field);
         // if a marble is being captured
         if (field.getOccupier() != null) {
             // store owner of marble for undo
             playercaptured = field.getOccupier().getOwner();
-            LOGGER.log(Level.INFO, "Marble of player " + playercaptured + " was captured");
+            LOGGER.debug("Marble of player " + playercaptured + " was captured");
             // add captured marble to correct base
             board.getBases()[field.getOccupier().getOwner()].addMarble(field.getOccupier());
         }

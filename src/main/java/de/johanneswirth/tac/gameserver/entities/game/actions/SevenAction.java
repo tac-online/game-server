@@ -1,12 +1,19 @@
 package de.johanneswirth.tac.gameserver.entities.game.actions;
 
 import de.johanneswirth.tac.gameserver.entities.game.*;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.validation.Valid;
 import java.util.List;
-import java.util.logging.Level;
-import static de.johanneswirth.tac.common.Utils.LOGGER;
 
 public class SevenAction extends Action {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SevenAction.class);
+
+    @NotEmpty
+    @Valid
     private List<SevenMovePart> actions;
 
     public SevenAction() {
@@ -20,12 +27,12 @@ public class SevenAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.log(Level.INFO, "Invalid Action");
+            LOGGER.debug("Invalid Action");
             return false;
         }
         // maximum of 7 action-parts
         if (actions.size() > 7) {
-            LOGGER.log(Level.INFO, "Too many parts");
+            LOGGER.debug("Too many parts");
             return false;
         }
         // the distance moved till now
@@ -34,48 +41,48 @@ public class SevenAction extends Action {
         // go through all action-parts
         for (int i = 0; i < actions.size(); i++) {
             SevenMovePart action = actions.get(i);
-            LOGGER.log(Level.INFO, "Checking part " + action + " from " + action.getSrcID() + " to " + action.getDestID());
+            LOGGER.debug("Checking part " + action + " from " + action.getSrcID() + " to " + action.getDestID());
             int dist = action.getDistance(game);
             if (action.getSrcID().isHomeField()) {
-                LOGGER.log(Level.INFO, "Src is HomeField");
+                LOGGER.debug("Src is HomeField");
                 // cant move out of home
                 if (!action.getDestID().isHomeField()) {
-                    LOGGER.log(Level.INFO, "Moving out of HomeField is not allowed");
+                    LOGGER.debug("Moving out of HomeField is not allowed");
                     allowed = false;
                 }
                 // cant move locked marble
                 if (game.getBoard().getField(action.getDestID()).getOccupier().isLocked()) {
-                    LOGGER.log(Level.INFO, "Marble is already locked");
+                    LOGGER.debug("Marble is already locked");
                     allowed = false;
                 }
             } else {
-                LOGGER.log(Level.INFO, "Src is TrackField");
+                LOGGER.debug("Src is TrackField");
                 // moving back on track not allowed
                 if (dist <= 0) {
-                    LOGGER.log(Level.INFO, "Only forward moves allowed");
+                    LOGGER.debug("Only forward moves allowed");
                     allowed = false;
                 }
             }
             // add absolute value to total distance
             distance += Math.abs(dist);
-            LOGGER.log(Level.INFO, "Total Distance is now " + distance);
+            LOGGER.debug("Total Distance is now " + distance);
             // check if maximum distance was exceeded
             if (distance > 7) {
-                LOGGER.log(Level.INFO, "Total Distance cannot be greater than 7");
+                LOGGER.debug("Total Distance cannot be greater than 7");
                 allowed = false;
             }
             // check if action is allowed
             if (!action.isAllowed(game)) {
-                LOGGER.log(Level.INFO, "Action is not allowed");
+                LOGGER.debug("Action is not allowed");
                 allowed = false;
             }
             if (allowed) {
-                LOGGER.log(Level.INFO, "Everything ok, executing part");
+                LOGGER.debug("Everything ok, executing part");
                 // if still allowed, execute action in preparation for next check
                 action.doAction(game);
             } else {
                 // if not undo all actions, then leave
-                LOGGER.log(Level.INFO, "Not allowed, rolling back previous parts");
+                LOGGER.debug("Not allowed, rolling back previous parts");
                 for (int j = 0; j < i; j++) {
                     actions.get(j).undoAction(game);
                 }
@@ -83,11 +90,11 @@ public class SevenAction extends Action {
             }
         }
         // rollback all actions
-        LOGGER.log(Level.INFO, "Rolling back all parts");
+        LOGGER.debug("Rolling back all parts");
         for (int j = 0; j < actions.size(); j++) {
             actions.get(j).undoAction(game);
         }
-        LOGGER.log(Level.INFO, "Total Distance is " + distance);
+        LOGGER.debug("Total Distance is " + distance);
         return distance == 7;
     }
 

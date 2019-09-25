@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import de.johanneswirth.tac.gameserver.entities.game.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.PROPERTY,
         property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = AngelMoveAction.class),
@@ -29,6 +30,8 @@ import java.io.Serializable;
         @JsonSubTypes.Type(value = WarriorAction.class)
 })
 public abstract class Action implements Serializable {
+    @Valid
+    @NotNull
     private Card card;
 
     public Action() {

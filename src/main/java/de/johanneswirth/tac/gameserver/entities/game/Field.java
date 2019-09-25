@@ -1,12 +1,26 @@
 package de.johanneswirth.tac.gameserver.entities.game;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 public class Field implements Serializable {
+    //TODO: validate if properties fit together
+    @Valid
     private Marble occupier;
+    @NotNull
+    @Min(0)
+    @Max(63)
     private int number;
+    @NotNull
+    @Min(0)
+    @Max(3)
     private int player;
+    @NotNull
     private boolean startField = false;
+    @NotNull
     private boolean homeField = false;
 
     public Field() {

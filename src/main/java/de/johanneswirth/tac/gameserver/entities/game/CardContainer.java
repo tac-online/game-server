@@ -1,9 +1,9 @@
 package de.johanneswirth.tac.gameserver.entities.game;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.validation.constraints.NotNull;
 
-@XmlRootElement
 public class CardContainer {
+    @NotNull
     private Card card;
 
     public Card getCard() {

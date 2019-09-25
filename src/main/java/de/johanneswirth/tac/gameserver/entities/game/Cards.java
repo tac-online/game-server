@@ -1,11 +1,12 @@
 package de.johanneswirth.tac.gameserver.entities.game;
 
 import de.johanneswirth.tac.gameserver.entities.game.actions.*;
-
-import java.util.logging.Level;
-import static de.johanneswirth.tac.common.Utils.LOGGER;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class Cards {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Cards.class);
 
     public static boolean regularAllowed(Game game, Card card) {
         int distance = card.getDistance();
@@ -14,16 +15,16 @@ public abstract class Cards {
         for (Field field : game.activeMarbles(game.getTurn(), true)) {
             if (field.isHomeField()) {
                 // Only one possible Action, just try it
-                LOGGER.log(Level.INFO, "Trying to move inside home");
+                LOGGER.debug("Trying to move inside home");
                 Action action = new RegularMoveAction(card, new FieldID(field), new FieldID(home[field.getNumber() + distance]));
                 if (action.isAllowed(game)) return true;
             } else {
                 // Either just move the distance on track...
-                LOGGER.log(Level.INFO, "Trying to move on track");
+                LOGGER.debug("Trying to move on track");
                 Action action = new RegularMoveAction(card, new FieldID(field), new FieldID(game.getBoard().getTrackField(field.getNumber() + distance)));
                 if (action.isAllowed(game)) return true;
                 // ... or move to player's start field and into home
-                LOGGER.log(Level.INFO, "Trying to move from track to house");
+                LOGGER.debug("Trying to move from track to home");
                 Field start = game.getBoard().getTrackField(game.getTurn() * 16);
                 int inhome = distance - ((start.getNumber() - field.getNumber()) % 64) - 1;
                 if (inhome >= 0 && inhome <= 3) {
@@ -89,7 +90,7 @@ public abstract class Cards {
 
     public static boolean eightAllowed(Game game, Card card) {
         // check whether the play has a marble on the track
-        LOGGER.log(Level.INFO, "Checking for open marbles");
+        LOGGER.debug("Checking for open marbles");
         return game.hasOpenMarbles(game.getTurn(), false);
     }
 

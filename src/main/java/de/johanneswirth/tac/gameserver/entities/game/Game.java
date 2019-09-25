@@ -3,9 +3,14 @@ package de.johanneswirth.tac.gameserver.entities.game;
 import de.johanneswirth.tac.gameserver.entities.game.actions.Action;
 import de.johanneswirth.tac.gameserver.entities.game.actions.DevilCardAction;
 import de.johanneswirth.tac.gameserver.entities.game.actions.DiscardAction;
-import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.SecurityContext;
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Collections;
@@ -13,25 +18,39 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
-import java.util.logging.Level;
-import static de.johanneswirth.tac.common.Utils.LOGGER;
-
-@XmlRootElement
 public class Game implements Serializable {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
+
+    @NotNull
+    @Valid
     private Board board;
-    private Player[] players;
+    @NotNull
+    @Size(min=4,max=4)
+    @Valid
     private List<Card>[] cards;
+    @NotNull
+    @Valid
     private Stack<Card> deck;
+    @Valid
     private Card lastCard;
+    @Valid
     private Card currentCard;
+    @Valid
     private Action lastAction;
+    @NotNull
     private boolean missTurn;
+    @NotNull
+    @Min(0)
+    @Max(4)
     private int turn;
 
+    @NotNull
     private boolean devilPlayed;
+    @Valid
     private Card devilCard;
 
-    public Game(String[] names) {
+    public Game() {
         board = Board.createNewBoard();
         cards = new List[4];
         for (int i = 0; i < 4; i++) {
@@ -41,14 +60,6 @@ public class Game implements Serializable {
         initCards();
         giveCards();
         turn = 0;
-    }
-
-    private Game() {
-
-    }
-
-    public boolean hasAccessOnGame(String player) {
-        return ArrayUtils.contains(players, player);
     }
 
     private void initCards() {
@@ -96,60 +107,60 @@ public class Game implements Serializable {
     }
 
     public boolean playCard(Card card) {
-        LOGGER.log(Level.INFO, "Trying to play card " + card);
+        LOGGER.debug("Trying to play card " + card);
         if (!cards[getTurn()].contains(card)) {
-            LOGGER.log(Level.INFO, "Card is not on current players hand");
+            LOGGER.debug("Card is not on current players hand");
             return false;
         } else if (currentCard != null) {
-            LOGGER.log(Level.INFO, "CurrentCard already set");
+            LOGGER.debug("CurrentCard already set");
             return false;
         }
         if (isMissTurn()) {
-            LOGGER.log(Level.INFO, "MissTurn -> throw away card");
+            LOGGER.debug("MissTurn -> throw away card");
             cards[getTurn()].remove(card);
             setMissTurn(false);
             nextPlayer(true);
             return true;
         }
         if (card.isAllowed(this)) {
-            LOGGER.log(Level.INFO, "Playing the card is allowed");
+            LOGGER.debug("Playing the card is allowed");
             cards[getTurn()].remove(card);
             currentCard = card;
             return true;
         }
         if (!playerHasPossibleMove()) {
-            LOGGER.log(Level.INFO, "Player has no possible moves -> throw away card");
+            LOGGER.debug("Player has no possible moves -> throw away card");
             cards[getTurn()].remove(card);
             nextPlayer(true);
             return true;
         }
-        LOGGER.log(Level.INFO, "Playing the card is not allowed and player has possible moves");
+        LOGGER.debug("Playing the card is not allowed and player has possible moves");
         return false;
     }
 
     public boolean doAction(Action action) {
-        LOGGER.log(Level.INFO, "Trying to do action " + action);
+        LOGGER.debug("Trying to do action " + action);
         if (currentCard != action.getCard()) {
-            LOGGER.log(Level.INFO, "Action does not match with CurrentCard");
+            LOGGER.debug("Action does not match with CurrentCard");
             return false;
         }
         if (isMissTurn() && (action.getCard() != Card.TAC || action.getClass() != DiscardAction.class)) {
-            LOGGER.log(Level.INFO, "MissTurn -> no Action allowed");
+            LOGGER.debug("MissTurn -> no Action allowed");
             return false;
         }
         if (!action.isAllowed(this)) {
-            LOGGER.log(Level.INFO, "Action not allowed");
+            LOGGER.debug("Action not allowed");
             return false;
         }
         if (action.getCard() != Card.Jester) {
-            LOGGER.log(Level.INFO, "Action is no JesterAction -> set LastAction and LastCard");
+            LOGGER.debug("Action is no JesterAction -> set LastAction and LastCard");
             lastAction = action;
             lastCard = action.getCard();
         }
-        LOGGER.log(Level.INFO, "Executing action");
+        LOGGER.debug("Executing action");
         action.doAction(this);
         if (! (action instanceof DevilCardAction)) {
-            LOGGER.log(Level.INFO, "Action is no DevilCardAction -> increaseTurn");
+            LOGGER.debug("Action is no DevilCardAction -> increaseTurn");
             nextPlayer(true);
             currentCard = null;
         }
@@ -157,80 +168,80 @@ public class Game implements Serializable {
     }
 
     public void simulateAction(Action action) {
-        LOGGER.log(Level.INFO, "Simulating action " + action);
+        LOGGER.debug("Simulating action " + action);
         action.doAction(this);
     }
 
     public void setDevilCard(Card card) {
-        LOGGER.log(Level.WARNING, "Setting DevilCard " + card);
+        LOGGER.debug("Setting DevilCard " + card);
         nextPlayer(false);
         if (card.isAllowed(this)) {
-            LOGGER.log(Level.INFO, "Playing the card is allowed");
+            LOGGER.debug("Playing the card is allowed");
             devilPlayed = true;
             devilCard = card;
             previousPlayer();
         } else if (!playerHasPossibleMove()) {
-            LOGGER.log(Level.INFO, "Next player has no possible moves -> throw away card");
+            LOGGER.debug("Next player has no possible moves -> throw away card");
             cards[getTurn()].remove(card);
         } else {
-            LOGGER.log(Level.INFO, "Playing the card is not allowed");
+            LOGGER.debug("Playing the card is not allowed");
             previousPlayer();
         }
     }
 
     public boolean devilCardAllowed(Card card) {
-        LOGGER.log(Level.INFO, "Checking if DevilCard is allowed: " + card);
+        LOGGER.debug("Checking if DevilCard is allowed: " + card);
         nextPlayer(false);
         if (!cards[getTurn()].contains(card)) {
-            LOGGER.log(Level.INFO, "Action is no JesterAction -> set LastAction and LastCard");
+            LOGGER.debug("Action is no JesterAction -> set LastAction and LastCard");
             previousPlayer();
             return false;
         }
         if (card.isAllowed(this)) {
-            LOGGER.log(Level.INFO, "Playing the card is allowed");
+            LOGGER.debug("Playing the card is allowed");
             previousPlayer();
             return true;
         }
         if (!playerHasPossibleMove()) {
-            LOGGER.log(Level.INFO, "Next player has no possible moves -> throwing away card allowed");
+            LOGGER.debug("Next player has no possible moves -> throwing away card allowed");
             previousPlayer();
             return true;
         }
-        LOGGER.log(Level.INFO, "Playing the card is not allowed");
+        LOGGER.debug("Playing the card is not allowed");
         previousPlayer();
         return false;
     }
 
     public void doDevilAction(Action action) {
-        LOGGER.log(Level.INFO, "Executing DevilAction " + action);
+        LOGGER.debug("Executing DevilAction " + action);
         nextPlayer(false);
         if (action.getCard() != Card.Jester) {
-            LOGGER.log(Level.INFO, "Action is no JesterAction -> set LastAction and LastCard");
+            LOGGER.debug("Action is no JesterAction -> set LastAction and LastCard");
             lastAction = action;
             lastCard = action.getCard();
         }
-        LOGGER.log(Level.INFO, "Executing action");
+        LOGGER.debug("Executing action");
         cards[getTurn()].remove(action.getCard());
         action.doAction(this);
         devilPlayed = false;
     }
 
     public boolean devilAllowed(Action action) {
-        LOGGER.log(Level.INFO, "Checking if DevilAction is allowed: " + action);
+        LOGGER.debug("Checking if DevilAction is allowed: " + action);
         nextPlayer(false);
         if (!cards[getTurn()].contains(action.getCard())) {
-            LOGGER.log(Level.INFO, "Next player does not possess the card");
+            LOGGER.debug("Next player does not possess the card");
             previousPlayer();
             return false;
         }
         boolean allowed = action.isAllowed(this);
         previousPlayer();
-        LOGGER.log(Level.INFO, "Checking if devil is allowed: " + allowed);
+        LOGGER.debug("Checking if devil is allowed: " + allowed);
         return allowed;
     }
 
     public void rollbackState() {
-        LOGGER.log(Level.INFO, "Undoing lastAction: " + lastAction);
+        LOGGER.debug("Undoing lastAction: " + lastAction);
         lastAction.undoAction(this);
     }
 
@@ -243,7 +254,7 @@ public class Game implements Serializable {
 
     public void doJester() {
         if (isEndOfRound()) return;
-        LOGGER.log(Level.INFO, "Jester: Swapping cards");
+        LOGGER.debug("Jester: Swapping cards");
         List<Card>[] newcards = new List[4];
         for (int i = 0; i < 4; i++) {
             newcards[(i + 3) % 4] = cards[i];
@@ -291,14 +302,6 @@ public class Game implements Serializable {
         this.board = board;
     }
 
-    public Player[] getPlayers() {
-        return players;
-    }
-
-    public void setPlayers(Player[] players) {
-        this.players = players;
-    }
-
     public List<Card>[] getCards() {
         return cards;
     }
@@ -333,8 +336,7 @@ public class Game implements Serializable {
     }
 
     public boolean isEndOfRound() {
-        int nextturn = (getTurn() + 1) % 4;
-        return cards[nextturn].isEmpty();
+        return cards[getTurn()].isEmpty();
     }
 
     public Card getCurrentCard() {

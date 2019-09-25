@@ -3,6 +3,7 @@ package de.johanneswirth.tac.gameserver;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.discovery.DiscoveryFactory;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -75,5 +76,19 @@ public class GameServerConfiguration extends Configuration {
     @JsonProperty("jerseyClient")
     public void setJerseyClientConfiguration(JerseyClientConfiguration jerseyClient) {
         this.jerseyClient = jerseyClient;
+    }
+
+    @Valid
+    @NotNull
+    private DataSourceFactory database = new DataSourceFactory();
+
+    @JsonProperty("database")
+    public void setDataSourceFactory(DataSourceFactory factory) {
+        this.database = factory;
+    }
+
+    @JsonProperty("database")
+    public DataSourceFactory getDataSourceFactory() {
+        return database;
     }
 }

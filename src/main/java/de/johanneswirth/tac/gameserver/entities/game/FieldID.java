@@ -1,10 +1,20 @@
 package de.johanneswirth.tac.gameserver.entities.game;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 public class FieldID implements Serializable {
+    @NotNull
+    @Min(0)
+    @Max(63)
     private int number;
+    @NotNull
+    @Min(0)
+    @Max(3)
     private int player;
+    @NotNull
     private boolean homeField;
 
     public FieldID() {

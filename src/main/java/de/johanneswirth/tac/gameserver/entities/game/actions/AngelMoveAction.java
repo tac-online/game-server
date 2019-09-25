@@ -1,11 +1,12 @@
 package de.johanneswirth.tac.gameserver.entities.game.actions;
 
 import de.johanneswirth.tac.gameserver.entities.game.*;
-
-import java.util.logging.Level;
-import static de.johanneswirth.tac.common.Utils.LOGGER;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AngelMoveAction extends MoveAction {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AngelMoveAction.class);
 
     public AngelMoveAction() {
     }
@@ -17,7 +18,7 @@ public class AngelMoveAction extends MoveAction {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.log(Level.INFO, "Invalid Action");
+            LOGGER.debug("Invalid Action");
             return false;
         }
         Board board = game.getBoard();
@@ -25,17 +26,17 @@ public class AngelMoveAction extends MoveAction {
         int player = src.getOccupier().getOwner();
         // check if moved player has no marble in base
         if (!board.getBases()[player].isEmpty()) {
-            LOGGER.log(Level.INFO, "Player has a marble in Base");
+            LOGGER.debug("Player has a marble in Base");
             return false;
         }
         // check if src field contains marble
         if (src.getOccupier() == null) {
-            LOGGER.log(Level.INFO, "Source does not contain marble");
+            LOGGER.debug("Source does not contain marble");
             return false;
         }
         // check if marble belongs to next player
         if (player != (game.getTurn() + 1) % 4) {
-            LOGGER.log(Level.INFO, "Marble does not belong to next player");
+            LOGGER.debug("Marble does not belong to next player");
             return false;
         }
         // check if move is correct

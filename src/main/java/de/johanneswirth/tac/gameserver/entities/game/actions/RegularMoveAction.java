@@ -1,11 +1,13 @@
 package de.johanneswirth.tac.gameserver.entities.game.actions;
 
 import de.johanneswirth.tac.gameserver.entities.game.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.logging.Level;
-import static de.johanneswirth.tac.common.Utils.LOGGER;
 
 public class RegularMoveAction extends MoveAction {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegularMoveAction.class);
 
     public RegularMoveAction() {
 
@@ -18,19 +20,19 @@ public class RegularMoveAction extends MoveAction {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.log(Level.INFO, "Invalid Action");
+            LOGGER.debug("Invalid Action");
             return false;
         }
         Board board = game.getBoard();
         Field src = board.getField(getSrcID());
         if (src.getOccupier() == null) {
-            LOGGER.log(Level.INFO, "No marble on source field");
+            LOGGER.debug("No marble on source field");
             return false;
         }
         int player = src.getOccupier().getOwner();
         // check if marble belongs to current player
         if (player != game.getTurn()) {
-            LOGGER.log(Level.INFO, "Marble does not belong to player in turn");
+            LOGGER.debug("Marble does not belong to player in turn");
             return false;
         }
         return super.allowed(game, getCard().getDistance());

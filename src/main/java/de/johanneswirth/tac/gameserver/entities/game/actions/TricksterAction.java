@@ -1,12 +1,21 @@
 package de.johanneswirth.tac.gameserver.entities.game.actions;
 
 import de.johanneswirth.tac.gameserver.entities.game.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.logging.Level;
-import static de.johanneswirth.tac.common.Utils.LOGGER;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 public class TricksterAction extends Action {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TricksterAction.class);
+
+    @Valid
+    @NotNull
     private FieldID firstID;
+    @Valid
+    @NotNull
     private FieldID secondID;
 
     public TricksterAction() {
@@ -21,7 +30,7 @@ public class TricksterAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.log(Level.INFO, "Invalid Action");
+            LOGGER.debug("Invalid Action");
             return false;
         }
         Board board = game.getBoard();
@@ -29,18 +38,18 @@ public class TricksterAction extends Action {
         Field second = board.getField(secondID);
         // check if both field contain marbles
         if (first.getOccupier() == null) {
-            LOGGER.log(Level.INFO, "Source does not contain marble");
+            LOGGER.debug("Source does not contain marble");
             return false;
         }
         if (second.getOccupier() == null) {
-            LOGGER.log(Level.INFO, "Destination does not contain marble");
+            LOGGER.debug("Destination does not contain marble");
             return false;
         }
         // check if current player has marble on track
         if (game.hasOpenMarbles(game.getTurn(), false)) {
             return true;
         } else {
-            LOGGER.log(Level.INFO, "Player has no open marbles");
+            LOGGER.debug("Player has no open marbles");
             return false;
         }
     }

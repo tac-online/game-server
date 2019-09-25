@@ -4,7 +4,10 @@ import de.johanneswirth.tac.gameserver.entities.game.Game;
 
 public interface IDatabase {
 
-    void saveGame(Game game, String name);
+    void saveGame(Game game, long id);
 
-    Game loadGame(String name);
+    Game loadGame(long id);
+
+    void deleteGame(long id);
 }
+

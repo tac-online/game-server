@@ -6,7 +6,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.function.BiFunction;
 
-@XmlRootElement
 public enum Card implements Serializable {
     One(1, Cards::oneAllowed),
     Two(2, Cards::regularAllowed),

@@ -1,11 +1,20 @@
 package de.johanneswirth.tac.gameserver.entities.game;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.List;
 
 public class Base implements Serializable {
+    @NotNull
+    @Valid
     private List<Marble> occupiers;
+    @NotNull
+    @Min(0)
+    @Max(3)
     private int player;
 
     public Base() {

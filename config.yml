@@ -1,8 +1,0 @@
-server:
-  maxThreads: 128
-
-discovery:
-  serviceName: tac-game-server
-
-logging:
-  level: WARN

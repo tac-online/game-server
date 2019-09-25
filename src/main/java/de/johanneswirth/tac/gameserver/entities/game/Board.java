@@ -1,12 +1,24 @@
 package de.johanneswirth.tac.gameserver.entities.game;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Board implements Serializable {
+    @NotNull
+    @Valid
+    @Size(min=64,max=64)
     private Field[] track;
+    @NotNull
+    @Valid
+    @Size(min=4,max=4)
     private Field[][] homes;
+    @NotNull
+    @Valid
+    @Size(min=4,max=4)
     private Base[] bases;
 
     public Board() {

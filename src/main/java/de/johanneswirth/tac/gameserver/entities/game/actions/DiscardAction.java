@@ -1,11 +1,13 @@
 package de.johanneswirth.tac.gameserver.entities.game.actions;
 
 import de.johanneswirth.tac.gameserver.entities.game.*;
-
-import java.util.logging.Level;
-import static de.johanneswirth.tac.common.Utils.LOGGER;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DiscardAction extends Action {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DiscardAction.class);
+
     public DiscardAction() {
     }
 
@@ -16,7 +18,7 @@ public class DiscardAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.log(Level.INFO, "Invalid Action");
+            LOGGER.debug("Invalid Action");
             return false;
         }
         // the current player should have no possible moves
@@ -24,7 +26,7 @@ public class DiscardAction extends Action {
         if (!game.playerHasPossibleMove() || game.isMissTurn()) {
             return true;
         } else {
-            LOGGER.log(Level.INFO, "Discarding not allowed");
+            LOGGER.debug("Discarding not allowed");
             return false;
         }
     }

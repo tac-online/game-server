@@ -1,11 +1,19 @@
 package de.johanneswirth.tac.gameserver.entities.game;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 
 public class Marble implements Serializable {
+    @NotNull
+    @Min(0)
+    @Max(3)
     private int owner;
+    @NotNull
     private boolean moved;
+    @NotNull
     private boolean locked;
 
     public Marble() {

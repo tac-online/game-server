@@ -1,11 +1,18 @@
 package de.johanneswirth.tac.gameserver.entities.game.actions;
 
 import de.johanneswirth.tac.gameserver.entities.game.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.logging.Level;
-import static de.johanneswirth.tac.common.Utils.LOGGER;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 public class TACAction extends Action {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TACAction.class);
+
+    @Valid
+    @NotNull
     private Action action;
 
     public TACAction() {
@@ -19,11 +26,11 @@ public class TACAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.log(Level.INFO, "Invalid Action");
+            LOGGER.debug("Invalid Action");
             return false;
         }
         if (game.getLastAction() == null) {
-            LOGGER.log(Level.INFO, "No Last Action");
+            LOGGER.debug("No Last Action");
             return false;
         }
         // undo last action
@@ -35,7 +42,7 @@ public class TACAction extends Action {
         if (allowed) {
             return true;
         } else {
-            LOGGER.log(Level.INFO, "Action not allowed");
+            LOGGER.debug("Action not allowed");
             return false;
         }
     }

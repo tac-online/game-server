@@ -1,11 +1,18 @@
 package de.johanneswirth.tac.gameserver.entities.game.actions;
 
 import de.johanneswirth.tac.gameserver.entities.game.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.logging.Level;
-import static de.johanneswirth.tac.common.Utils.LOGGER;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 public class WarriorAction extends Action {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WarriorAction.class);
+
+    @Valid
+    @NotNull
     private FieldID srcID;
     private int playerCaptured;
     private int numberCaptured;
@@ -21,7 +28,7 @@ public class WarriorAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.log(Level.INFO, "Invalid Action");
+            LOGGER.debug("Invalid Action");
             return false;
         }
         Board board = game.getBoard();
@@ -30,7 +37,7 @@ public class WarriorAction extends Action {
         if (src.getOccupier() != null && src.getOccupier().getOwner() == game.getTurn()) {
             return true;
         } else {
-            LOGGER.log(Level.INFO, "Source does not contain a Marble of the player in turn");
+            LOGGER.debug("Source does not contain a Marble of the player in turn");
             return false;
         }
     }
