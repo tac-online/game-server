@@ -25,13 +25,13 @@ public class DevilCardAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.debug("Invalid Action");
+            LOGGER.info("Invalid Action");
             return false;
         }
         if (game.devilCardAllowed(devilCard)) {
             return true;
         } else {
-            LOGGER.debug("DevilCardAction not allowed");
+            LOGGER.info("DevilCardAction not allowed");
             return false;
         }
     }

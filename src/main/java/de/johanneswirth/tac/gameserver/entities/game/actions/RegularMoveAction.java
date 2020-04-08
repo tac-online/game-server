@@ -20,19 +20,19 @@ public class RegularMoveAction extends MoveAction {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.debug("Invalid Action");
+            LOGGER.info("Invalid Action");
             return false;
         }
         Board board = game.getBoard();
         Field src = board.getField(getSrcID());
         if (src.getOccupier() == null) {
-            LOGGER.debug("No marble on source field");
+            LOGGER.info("No marble on source field");
             return false;
         }
         int player = src.getOccupier().getOwner();
         // check if marble belongs to current player
         if (player != game.getTurn()) {
-            LOGGER.debug("Marble does not belong to player in turn");
+            LOGGER.info("Marble does not belong to player in turn");
             return false;
         }
         return super.allowed(game, getCard().getDistance());

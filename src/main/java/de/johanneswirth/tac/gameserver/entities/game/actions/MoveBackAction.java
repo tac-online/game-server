@@ -18,7 +18,7 @@ public class MoveBackAction extends MoveAction {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.debug("Invalid Action");
+            LOGGER.info("Invalid Action");
             return false;
         }
         Board board = game.getBoard();
@@ -26,23 +26,23 @@ public class MoveBackAction extends MoveAction {
         Field dest = board.getField(getDestID());
         // cant move out of home
         if (src.isHomeField()) {
-            LOGGER.debug("Moving out of Home is not allowed");
+            LOGGER.info("Moving out of Home is not allowed");
             return false;
         }
         // check if src field contains marble
         if (src.getOccupier() == null) {
-            LOGGER.debug("Source does not contain Marble");
+            LOGGER.info("Source does not contain Marble");
             return false;
         }
         int player = src.getOccupier().getOwner();
         // check if marble belongs to current player
         if (player != game.getTurn()) {
-            LOGGER.debug("Marble does not belong to player in turn");
+            LOGGER.info("Marble does not belong to player in turn");
             return false;
         }
         // only move into house, if marble was already moved before
         if (!src.getOccupier().isMoved() && dest.isHomeField()) {
-            LOGGER.debug("Only moved Marbles can be moved to House");
+            LOGGER.info("Only moved Marbles can be moved to House");
             return false;
         }
         // check move

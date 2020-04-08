@@ -79,8 +79,8 @@ public class Game implements Serializable {
 
     private void createCards() {
         deck.push(Card.Angel);
-        deck.push(Card.Devil);
-        deck.push(Card.Jester);
+        //deck.push(Card.Devil);
+        //deck.push(Card.Jester);
         deck.push(Card.Warrior);
         for (int i = 0; i < 9; i++) {
             deck.push(Card.One);
@@ -107,60 +107,62 @@ public class Game implements Serializable {
     }
 
     public boolean playCard(Card card) {
-        LOGGER.debug("Trying to play card " + card);
+        LOGGER.info("Trying to play card " + card);
         if (!cards[getTurn()].contains(card)) {
-            LOGGER.debug("Card is not on current players hand");
+            LOGGER.info("Card is not on current players hand");
             return false;
         } else if (currentCard != null) {
-            LOGGER.debug("CurrentCard already set");
+            LOGGER.info("CurrentCard already set");
             return false;
         }
         if (isMissTurn()) {
-            LOGGER.debug("MissTurn -> throw away card");
+            LOGGER.info("MissTurn -> throw away card");
             cards[getTurn()].remove(card);
+            lastCard = card;
             setMissTurn(false);
             nextPlayer(true);
             return true;
         }
         if (card.isAllowed(this)) {
-            LOGGER.debug("Playing the card is allowed");
+            LOGGER.info("Playing the card is allowed");
             cards[getTurn()].remove(card);
             currentCard = card;
             return true;
         }
         if (!playerHasPossibleMove()) {
-            LOGGER.debug("Player has no possible moves -> throw away card");
+            LOGGER.info("Player has no possible moves -> throw away card");
             cards[getTurn()].remove(card);
+            lastCard = card;
             nextPlayer(true);
             return true;
         }
-        LOGGER.debug("Playing the card is not allowed and player has possible moves");
+        LOGGER.info("Playing the card is not allowed and player has possible moves");
         return false;
     }
 
     public boolean doAction(Action action) {
-        LOGGER.debug("Trying to do action " + action);
+        LOGGER.info("Trying to do action " + action);
         if (currentCard != action.getCard()) {
-            LOGGER.debug("Action does not match with CurrentCard");
+            LOGGER.info("Action does not match with CurrentCard");
             return false;
         }
         if (isMissTurn() && (action.getCard() != Card.TAC || action.getClass() != DiscardAction.class)) {
-            LOGGER.debug("MissTurn -> no Action allowed");
+            LOGGER.info("MissTurn -> no Action allowed");
             return false;
         }
         if (!action.isAllowed(this)) {
-            LOGGER.debug("Action not allowed");
+            LOGGER.info("Action not allowed");
             return false;
         }
         if (action.getCard() != Card.Jester) {
-            LOGGER.debug("Action is no JesterAction -> set LastAction and LastCard");
+            LOGGER.info("Action is no JesterAction -> set LastAction and LastCard");
             lastAction = action;
             lastCard = action.getCard();
         }
-        LOGGER.debug("Executing action");
+        LOGGER.info("Executing action");
         action.doAction(this);
         if (! (action instanceof DevilCardAction)) {
-            LOGGER.debug("Action is no DevilCardAction -> increaseTurn");
+            LOGGER.info("Action is no DevilCardAction -> increaseTurn");
             nextPlayer(true);
             currentCard = null;
         }
@@ -168,80 +170,82 @@ public class Game implements Serializable {
     }
 
     public void simulateAction(Action action) {
-        LOGGER.debug("Simulating action " + action);
+        LOGGER.info("Simulating action " + action);
         action.doAction(this);
+        this.setCurrentCard(null);
+        this.lastCard = action.getCard();
     }
 
     public void setDevilCard(Card card) {
-        LOGGER.debug("Setting DevilCard " + card);
+        LOGGER.info("Setting DevilCard " + card);
         nextPlayer(false);
         if (card.isAllowed(this)) {
-            LOGGER.debug("Playing the card is allowed");
+            LOGGER.info("Playing the card is allowed");
             devilPlayed = true;
             devilCard = card;
             previousPlayer();
         } else if (!playerHasPossibleMove()) {
-            LOGGER.debug("Next player has no possible moves -> throw away card");
+            LOGGER.info("Next player has no possible moves -> throw away card");
             cards[getTurn()].remove(card);
         } else {
-            LOGGER.debug("Playing the card is not allowed");
+            LOGGER.info("Playing the card is not allowed");
             previousPlayer();
         }
     }
 
     public boolean devilCardAllowed(Card card) {
-        LOGGER.debug("Checking if DevilCard is allowed: " + card);
+        LOGGER.info("Checking if DevilCard is allowed: " + card);
         nextPlayer(false);
         if (!cards[getTurn()].contains(card)) {
-            LOGGER.debug("Action is no JesterAction -> set LastAction and LastCard");
+            LOGGER.info("Action is no JesterAction -> set LastAction and LastCard");
             previousPlayer();
             return false;
         }
         if (card.isAllowed(this)) {
-            LOGGER.debug("Playing the card is allowed");
+            LOGGER.info("Playing the card is allowed");
             previousPlayer();
             return true;
         }
         if (!playerHasPossibleMove()) {
-            LOGGER.debug("Next player has no possible moves -> throwing away card allowed");
+            LOGGER.info("Next player has no possible moves -> throwing away card allowed");
             previousPlayer();
             return true;
         }
-        LOGGER.debug("Playing the card is not allowed");
+        LOGGER.info("Playing the card is not allowed");
         previousPlayer();
         return false;
     }
 
     public void doDevilAction(Action action) {
-        LOGGER.debug("Executing DevilAction " + action);
+        LOGGER.info("Executing DevilAction " + action);
         nextPlayer(false);
         if (action.getCard() != Card.Jester) {
-            LOGGER.debug("Action is no JesterAction -> set LastAction and LastCard");
+            LOGGER.info("Action is no JesterAction -> set LastAction and LastCard");
             lastAction = action;
             lastCard = action.getCard();
         }
-        LOGGER.debug("Executing action");
+        LOGGER.info("Executing action");
         cards[getTurn()].remove(action.getCard());
         action.doAction(this);
         devilPlayed = false;
     }
 
     public boolean devilAllowed(Action action) {
-        LOGGER.debug("Checking if DevilAction is allowed: " + action);
+        LOGGER.info("Checking if DevilAction is allowed: " + action);
         nextPlayer(false);
         if (!cards[getTurn()].contains(action.getCard())) {
-            LOGGER.debug("Next player does not possess the card");
+            LOGGER.info("Next player does not possess the card");
             previousPlayer();
             return false;
         }
         boolean allowed = action.isAllowed(this);
         previousPlayer();
-        LOGGER.debug("Checking if devil is allowed: " + allowed);
+        LOGGER.info("Checking if devil is allowed: " + allowed);
         return allowed;
     }
 
     public void rollbackState() {
-        LOGGER.debug("Undoing lastAction: " + lastAction);
+        LOGGER.info("Undoing lastAction: " + lastAction);
         lastAction.undoAction(this);
     }
 
@@ -254,7 +258,7 @@ public class Game implements Serializable {
 
     public void doJester() {
         if (isEndOfRound()) return;
-        LOGGER.debug("Jester: Swapping cards");
+        LOGGER.info("Jester: Swapping cards");
         List<Card>[] newcards = new List[4];
         for (int i = 0; i < 4; i++) {
             newcards[(i + 3) % 4] = cards[i];
@@ -316,7 +320,10 @@ public class Game implements Serializable {
 
     private void nextPlayer(boolean checkGiveCards) {
         turn = (turn + 1) % 4;
-        if (checkGiveCards && isEndOfRound()) giveCards();
+        if (checkGiveCards && isEndOfRound()) {
+            giveCards();
+            turn = (turn + 1) % 4;
+        }
     }
 
     private void previousPlayer() {

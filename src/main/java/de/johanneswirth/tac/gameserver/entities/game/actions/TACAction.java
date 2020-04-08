@@ -26,11 +26,11 @@ public class TACAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.debug("Invalid Action");
+            LOGGER.info("Invalid Action");
             return false;
         }
         if (game.getLastAction() == null) {
-            LOGGER.debug("No Last Action");
+            LOGGER.info("No Last Action");
             return false;
         }
         // undo last action
@@ -42,7 +42,7 @@ public class TACAction extends Action {
         if (allowed) {
             return true;
         } else {
-            LOGGER.debug("Action not allowed");
+            LOGGER.info("Action not allowed");
             return false;
         }
     }

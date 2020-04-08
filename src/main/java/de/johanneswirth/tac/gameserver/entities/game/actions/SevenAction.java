@@ -27,12 +27,12 @@ public class SevenAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.debug("Invalid Action");
+            LOGGER.info("Invalid Action");
             return false;
         }
         // maximum of 7 action-parts
         if (actions.size() > 7) {
-            LOGGER.debug("Too many parts");
+            LOGGER.info("Too many parts");
             return false;
         }
         // the distance moved till now
@@ -41,48 +41,48 @@ public class SevenAction extends Action {
         // go through all action-parts
         for (int i = 0; i < actions.size(); i++) {
             SevenMovePart action = actions.get(i);
-            LOGGER.debug("Checking part " + action + " from " + action.getSrcID() + " to " + action.getDestID());
+            LOGGER.info("Checking part " + action + " from " + action.getSrcID() + " to " + action.getDestID());
             int dist = action.getDistance(game);
             if (action.getSrcID().isHomeField()) {
-                LOGGER.debug("Src is HomeField");
+                LOGGER.info("Src is HomeField");
                 // cant move out of home
                 if (!action.getDestID().isHomeField()) {
-                    LOGGER.debug("Moving out of HomeField is not allowed");
+                    LOGGER.info("Moving out of HomeField is not allowed");
                     allowed = false;
                 }
                 // cant move locked marble
-                if (game.getBoard().getField(action.getDestID()).getOccupier().isLocked()) {
-                    LOGGER.debug("Marble is already locked");
+                if (game.getBoard().getField(action.getSrcID()).getOccupier().isLocked()) {
+                    LOGGER.info("Marble is already locked");
                     allowed = false;
                 }
             } else {
-                LOGGER.debug("Src is TrackField");
+                LOGGER.info("Src is TrackField");
                 // moving back on track not allowed
                 if (dist <= 0) {
-                    LOGGER.debug("Only forward moves allowed");
+                    LOGGER.info("Only forward moves allowed");
                     allowed = false;
                 }
             }
             // add absolute value to total distance
             distance += Math.abs(dist);
-            LOGGER.debug("Total Distance is now " + distance);
+            LOGGER.info("Total Distance is now " + distance);
             // check if maximum distance was exceeded
             if (distance > 7) {
-                LOGGER.debug("Total Distance cannot be greater than 7");
+                LOGGER.info("Total Distance cannot be greater than 7");
                 allowed = false;
             }
             // check if action is allowed
             if (!action.isAllowed(game)) {
-                LOGGER.debug("Action is not allowed");
+                LOGGER.info("Action is not allowed");
                 allowed = false;
             }
             if (allowed) {
-                LOGGER.debug("Everything ok, executing part");
+                LOGGER.info("Everything ok, executing part");
                 // if still allowed, execute action in preparation for next check
                 action.doAction(game);
             } else {
                 // if not undo all actions, then leave
-                LOGGER.debug("Not allowed, rolling back previous parts");
+                LOGGER.info("Not allowed, rolling back previous parts");
                 for (int j = 0; j < i; j++) {
                     actions.get(j).undoAction(game);
                 }
@@ -90,11 +90,12 @@ public class SevenAction extends Action {
             }
         }
         // rollback all actions
-        LOGGER.debug("Rolling back all parts");
-        for (int j = 0; j < actions.size(); j++) {
+        LOGGER.info("Rolling back all parts");
+        for (int j = actions.size() - 1 ; j >= 0; j--) {
             actions.get(j).undoAction(game);
         }
-        LOGGER.debug("Total Distance is " + distance);
+        LOGGER.info(game.getBoard().toString());
+        LOGGER.info("Total Distance is " + distance);
         return distance == 7;
     }
 

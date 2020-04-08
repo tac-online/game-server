@@ -4,6 +4,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Objects;
 
 public class FieldID implements Serializable {
     @NotNull
@@ -64,6 +65,16 @@ public class FieldID implements Serializable {
         } else {
             return p && number >= 0 && number < 64;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FieldID)) return false;
+        FieldID fieldID = (FieldID) o;
+        return number == fieldID.number &&
+                player == fieldID.player &&
+                homeField == fieldID.homeField;
     }
 
     @Override

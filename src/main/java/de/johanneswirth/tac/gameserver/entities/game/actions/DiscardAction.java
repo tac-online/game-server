@@ -18,7 +18,7 @@ public class DiscardAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.debug("Invalid Action");
+            LOGGER.info("Invalid Action");
             return false;
         }
         // the current player should have no possible moves
@@ -26,7 +26,7 @@ public class DiscardAction extends Action {
         if (!game.playerHasPossibleMove() || game.isMissTurn()) {
             return true;
         } else {
-            LOGGER.debug("Discarding not allowed");
+            LOGGER.info("Discarding not allowed");
             return false;
         }
     }

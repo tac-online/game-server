@@ -25,14 +25,14 @@ public class DevilAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.debug("Invalid Action");
+            LOGGER.info("Invalid Action");
             return false;
         }
         // check if action is allowed for the next player
         if (game.devilAllowed(action)) {
             return true;
         } else {
-            LOGGER.debug("Devil Action not allowed");
+            LOGGER.info("Devil Action not allowed");
             return false;
         }
     }

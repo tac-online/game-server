@@ -30,7 +30,7 @@ public class TricksterAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.debug("Invalid Action");
+            LOGGER.info("Invalid Action");
             return false;
         }
         Board board = game.getBoard();
@@ -38,18 +38,18 @@ public class TricksterAction extends Action {
         Field second = board.getField(secondID);
         // check if both field contain marbles
         if (first.getOccupier() == null) {
-            LOGGER.debug("Source does not contain marble");
+            LOGGER.info("Source does not contain marble");
             return false;
         }
         if (second.getOccupier() == null) {
-            LOGGER.debug("Destination does not contain marble");
+            LOGGER.info("Destination does not contain marble");
             return false;
         }
         // check if current player has marble on track
         if (game.hasOpenMarbles(game.getTurn(), false)) {
             return true;
         } else {
-            LOGGER.debug("Player has no open marbles");
+            LOGGER.info("Player has no open marbles");
             return false;
         }
     }

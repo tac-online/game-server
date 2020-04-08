@@ -35,40 +35,40 @@ public abstract class MoveAction extends Action {
         Field dest = board.getField(getDestID());
         // check if src field contains marble
         if (src.getOccupier() == null || src.getOccupier().isLocked()) {
-            LOGGER.debug("Source field does not contain marble or marble is locked");
+            LOGGER.info("Source field does not contain marble or marble is locked");
             return false;
         }
         int player = src.getOccupier().getOwner();
         // two cases: src is homeField or not
         if (src.isHomeField()) {
-            LOGGER.debug("Source is a HomeField");
+            LOGGER.info("Source is a HomeField");
             // cant move out of home
             if (!dest.isHomeField()) {
-                LOGGER.debug("Destination is no HomeField");
+                LOGGER.info("Destination is no HomeField");
                 return false;
             }
             // check if move distance matches card
             if (src.getNumber() + dist != dest.getNumber()) {
-                LOGGER.debug("Distance between Source and Destination does not match card value");
+                LOGGER.info("Distance between Source and Destination does not match card value");
                 return false;
             }
             // check if all fields on the way are free (including last)
             for (int field = src.getNumber() + 1; field <= dest.getNumber(); field ++) {
                 if (board.getHomes()[player][field].getOccupier() != null) {
-                    LOGGER.debug("There is another marble in the way");
+                    LOGGER.info("There is another marble in the way");
                     return false;
                 }
             }
             return true;
         } else {
-            LOGGER.debug("Source is on Track");
+            LOGGER.info("Source is on Track");
             // two cases: dest is homeField or not
             int sign = Integer.signum(dist);
             if (dest.isHomeField()) {
-                LOGGER.debug("Destination is a HomeField");
+                LOGGER.info("Destination is a HomeField");
                 // check if the home belongs to the player
                 if (dest.getPlayer() != player || !src.getOccupier().isMoved()) {
-                    LOGGER.debug("Destination does not belong to player or marble was not yet moved");
+                    LOGGER.info("Destination does not belong to player or marble was not yet moved");
                     return false;
                 }
                 // player has to enter home through his startfield
@@ -78,35 +78,35 @@ public abstract class MoveAction extends Action {
 
                 // check if distance on track leads from src to the startfield
                 if (board.getTrackField(src.getNumber() + trackdist).getNumber() != start.getNumber()) {
-                    LOGGER.debug("Distance between Source and Destination does not match card value");
+                    LOGGER.info("Distance between Source and Destination does not match card value");
                     return false;
                 }
                 // check if all trackfields on the way are free (including startfield)
                 for (int field = sign; field != trackdist + sign; field += sign) {
                     if (board.getTrackField(src.getNumber() + field).getOccupier() != null) {
-                        LOGGER.debug("There is another marble in the way (on Track)");
+                        LOGGER.info("There is another marble in the way (on Track)");
                         return false;
                     }
                 }
                 // check if all homefields on the way are free (including last)
                 for (int field = 0; field <= dest.getNumber(); field ++) {
                     if (board.getHomes()[player][field].getOccupier() != null) {
-                        LOGGER.debug("There is another marble in the way (on a HomeField)");
+                        LOGGER.info("There is another marble in the way (on a HomeField)");
                         return false;
                     }
                 }
                 return true;
             } else {
-                LOGGER.debug("Destination is on Track");
+                LOGGER.info("Destination is on Track");
                 // check if move distance matches card
                 if (board.getTrackField(src.getNumber() + dist).getNumber() != dest.getNumber()) {
-                    LOGGER.debug("Distance between Source and Destination does not match card value");
+                    LOGGER.info("Distance between Source and Destination does not match card value");
                     return false;
                 }
                 // check if all fields on the way are free (excluding last)
                 for (int field = sign; field != dist; field += sign) {
                     if (board.getTrackField(src.getNumber() + field).getOccupier() != null) {
-                        LOGGER.debug("There is another marble in the way");
+                        LOGGER.info("There is another marble in the way");
                         return false;
                     }
                 }
@@ -120,18 +120,23 @@ public abstract class MoveAction extends Action {
         Board board = game.getBoard();
         Field src = board.getField(srcID);
         Field dest = board.getField(destID);
-        LOGGER.debug("Moving marble from " + src + " to " + dest);
+        LOGGER.info("Moving marble from " + src + " to " + dest);
         // if a marble is being captured
         if (dest.getOccupier() != null) {
             // store owner of marble for undo
             playercaptured = dest.getOccupier().getOwner();
-            LOGGER.debug("Marble of player " + playercaptured + " was captured");
+            LOGGER.info("Marble of player " + playercaptured + " was captured");
             // add captured marble to correct base
             board.getBases()[dest.getOccupier().getOwner()].addMarble(dest.getOccupier());
         }
         // move marble
+        LOGGER.info(board.toString());
+        LOGGER.info(src.toString());
+        LOGGER.info(src.getOccupier().toString());
         dest.setOccupier(src.getOccupier());
         src.setOccupier(null);
+        LOGGER.info(dest.toString());
+        LOGGER.info(dest.getOccupier().toString());
         dest.getOccupier().setMoved(true);
         // check if marble is locked now (only in home)
         // dont lock if card is seven (-> will be done after last action)
@@ -143,7 +148,7 @@ public abstract class MoveAction extends Action {
             }
             dest.getOccupier().setLocked(locked);
 
-            if (locked) LOGGER.debug("Marble is now locked");
+            if (locked) LOGGER.info("Marble is now locked");
         }
     }
 
@@ -152,6 +157,7 @@ public abstract class MoveAction extends Action {
         Board board = game.getBoard();
         Field src = board.getField(srcID);
         Field dest = board.getField(destID);
+        LOGGER.info("Moving marble from " + dest + " back to " + src);
         // move marble back
         src.setOccupier(dest.getOccupier());
         // if move was a capture move a marble of the captured player from his base to dest, otherwise leave dest empty
@@ -164,7 +170,7 @@ public abstract class MoveAction extends Action {
 
     @Override
     public boolean valid() {
-        return srcID.valid() && destID.valid();
+        return srcID.valid() && destID.valid() && !srcID.equals(destID);
     }
 
     public FieldID getSrcID() {

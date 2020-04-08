@@ -15,16 +15,19 @@ public abstract class Cards {
         for (Field field : game.activeMarbles(game.getTurn(), true)) {
             if (field.isHomeField()) {
                 // Only one possible Action, just try it
-                LOGGER.debug("Trying to move inside home");
-                Action action = new RegularMoveAction(card, new FieldID(field), new FieldID(home[field.getNumber() + distance]));
-                if (action.isAllowed(game)) return true;
+                LOGGER.info("Trying to move inside home");
+                if (field.getNumber() + distance <= 4) {
+                    Action action = new RegularMoveAction(card, new FieldID(field), new FieldID(home[field.getNumber() + distance]));
+                    if (action.isAllowed(game)) return true;
+                }
             } else {
                 // Either just move the distance on track...
-                LOGGER.debug("Trying to move on track");
-                Action action = new RegularMoveAction(card, new FieldID(field), new FieldID(game.getBoard().getTrackField(field.getNumber() + distance)));
+                LOGGER.info("Trying to move on track");
+                int dest = (field.getNumber() + distance) % 64;
+                Action action = new RegularMoveAction(card, new FieldID(field), new FieldID(game.getBoard().getTrackField(dest)));
                 if (action.isAllowed(game)) return true;
                 // ... or move to player's start field and into home
-                LOGGER.debug("Trying to move from track to home");
+                LOGGER.info("Trying to move from track to home");
                 Field start = game.getBoard().getTrackField(game.getTurn() * 16);
                 int inhome = distance - ((start.getNumber() - field.getNumber()) % 64) - 1;
                 if (inhome >= 0 && inhome <= 3) {
@@ -44,7 +47,7 @@ public abstract class Cards {
 
     public static boolean thirteenAllowed(Game game, Card card) {
         // test whether the player can do an OpenAction
-        Action action = new RegularOpenAction(card, game.getTurn());
+        Action action = new RegularOpenAction(card, game.getTurn(), new FieldID(game.getTurn() * 16, game.getTurn(), false));
         // or move the amount (13) with a marble already on track
         return action.isAllowed(game) || regularAllowed(game, card);
     }
@@ -90,7 +93,7 @@ public abstract class Cards {
 
     public static boolean eightAllowed(Game game, Card card) {
         // check whether the play has a marble on the track
-        LOGGER.debug("Checking for open marbles");
+        LOGGER.info("Checking for open marbles");
         return game.hasOpenMarbles(game.getTurn(), false);
     }
 

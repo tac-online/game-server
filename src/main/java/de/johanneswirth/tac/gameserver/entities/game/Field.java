@@ -73,4 +73,12 @@ public class Field implements Serializable {
     public void setHomeField(boolean homeField) {
         this.homeField = homeField;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        if (homeField) builder.append("Home " + player + " ");
+        builder.append("Field " + number);
+        return builder.toString();
+    }
 }

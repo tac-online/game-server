@@ -14,8 +14,11 @@ public class WarriorAction extends Action {
     @Valid
     @NotNull
     private FieldID srcID;
+
+    @Valid
+    @NotNull
+    private FieldID destID;
     private int playerCaptured;
-    private int numberCaptured;
 
     public WarriorAction() {
     }
@@ -28,18 +31,25 @@ public class WarriorAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.debug("Invalid Action");
+            LOGGER.info("Invalid Action");
             return false;
         }
         Board board = game.getBoard();
         Field src = board.getField(srcID);
+        Field dest = board.getField(destID);
         // check if field contains a marble of the current player
-        if (src.getOccupier() != null && src.getOccupier().getOwner() == game.getTurn()) {
-            return true;
-        } else {
-            LOGGER.debug("Source does not contain a Marble of the player in turn");
+        if (src.getOccupier() == null) {
+            LOGGER.info("Source does not contain a Marble");
             return false;
         }
+        if (src.getOccupier().getOwner() != game.getTurn()) {
+            LOGGER.info("Source does not contain a Marble of the player in turn");
+            return false;
+        }
+        if (dest.getOccupier() == null) {
+            LOGGER.info("Dest does not contain a marble");
+        }
+        return board.pathFree(src, dest);
     }
 
     @Override
@@ -47,30 +57,21 @@ public class WarriorAction extends Action {
         Board board = game.getBoard();
         Field src = board.getField(srcID);
         int dist = 1;
-        Field dest;
-        // find next marble
-        while (true) {
-            dest = board.getTrackField(src.getNumber() + dist);
-            if (dest.getOccupier() != null) {
-                // store owner of captured marble for possible undo
-                playerCaptured = dest.getOccupier().getOwner();
-                // store number of dest field
-                numberCaptured = (src.getNumber() + dist) % 64;
-                // add marble to correct base
-                board.getBases()[dest.getOccupier().getOwner()].addMarble(dest.getOccupier());
-                if (dest.getNumber() == src.getNumber()) {
-                    // only one marble on track -> remove captured marble from field
-                    dest.setOccupier(null);
-                } else {
-                    // move marble
-                    dest.setOccupier(src.getOccupier());
-                    src.setOccupier(null);
-                    dest.getOccupier().setMoved(true);
-                }
-                break;
-            }
-            dist++;
+        Field dest = board.getField(destID);
+        // store owner of captured marble for possible undo
+        playerCaptured = dest.getOccupier().getOwner();
+        // add marble to correct base
+        board.getBases()[dest.getOccupier().getOwner()].addMarble(dest.getOccupier());
+        if (dest.getNumber() == src.getNumber()) {
+            // only one marble on track -> remove captured marble from field
+            dest.setOccupier(null);
+        } else {
+            // move marble
+            dest.setOccupier(src.getOccupier());
+            src.setOccupier(null);
+            dest.getOccupier().setMoved(true);
         }
+
     }
 
     @Override
@@ -78,7 +79,7 @@ public class WarriorAction extends Action {
         if (!game.getLastAction().equals(this)) return;
         Board board = game.getBoard();
         Field src = board.getField(srcID);
-        Field dest = board.getField(new FieldID(numberCaptured, 0, false));
+        Field dest = board.getField(destID);
         // check if marble captured itself
         if (dest.getNumber() != src.getNumber()) {
             // move back player
@@ -93,7 +94,7 @@ public class WarriorAction extends Action {
 
     @Override
     public boolean valid() {
-        return srcID.valid() && !srcID.isHomeField() && getCard() == Card.Warrior;
+        return srcID.valid() && destID.valid() && !srcID.isHomeField() && !destID.isHomeField() && getCard() == Card.Warrior;
     }
 
     public FieldID getSrcID() {
@@ -104,12 +105,22 @@ public class WarriorAction extends Action {
         this.srcID = srcID;
     }
 
+    public FieldID getDestID() {
+        return destID;
+    }
+
+    public void setDestID(FieldID destID) {
+        this.destID = destID;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append(super.toString());
         builder.append("Src: ");
         builder.append(srcID);
+        builder.append("Dest: ");
+        builder.append(destID);
         return builder.toString();
     }
 }

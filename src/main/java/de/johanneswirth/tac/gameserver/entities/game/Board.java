@@ -76,6 +76,16 @@ public class Board implements Serializable {
         return track[number];
     }
 
+    public boolean pathFree(Field src, Field dest) {
+        if (src.isHomeField() || dest.isHomeField()) throw new RuntimeException("Src or Dest is a HomeField");
+        int i = src.getNumber() + 1;
+        while (i != dest.getNumber()) {
+            if (getTrackField(i).getOccupier() != null) return false;
+            i = (i+1) % 64;
+        }
+        return true;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

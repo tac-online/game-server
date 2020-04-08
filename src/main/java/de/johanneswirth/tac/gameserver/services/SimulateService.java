@@ -18,8 +18,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 
-import static de.johanneswirth.tac.common.ErrorStatus.NO_ACCESS;
-import static de.johanneswirth.tac.common.ErrorStatus.UNKOWN_GAME;
+import static de.johanneswirth.tac.common.ErrorStatus.*;
 import static de.johanneswirth.tac.common.SuccessStatus.OK;
 
 @Path("game/simulate/{gameID}")
@@ -49,7 +48,7 @@ public class SimulateService {
         else if (!dao.hasAccessOnGame(Long.parseLong(context.getUserPrincipal().getName()), gameID))
             return NO_ACCESS;
         else {
-            game.setCurrentCard(null);
+            if (!move.valid()) return MOVE_NOT_ALLOWED;
             game.simulateAction(move);
             return OK(game, System.currentTimeMillis());
         }

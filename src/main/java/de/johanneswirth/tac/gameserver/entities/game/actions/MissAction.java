@@ -19,19 +19,19 @@ public class MissAction extends Action {
     @Override
     public boolean isAllowed(Game game) {
         if (!valid()) {
-            LOGGER.debug("Invalid Action");
+            LOGGER.info("Invalid Action");
             return false;
         }
         // Miss at end of a round is not allowed; must be used as move or discarded
         if (game.isEndOfRound()) {
-            LOGGER.debug("Cannot use as miss if last card of round");
+            LOGGER.info("Cannot use as miss if last card of round");
             return false;
         }
         // player has open marbles on track
         if (game.hasOpenMarbles(game.getTurn(), false)) {
             return true;
         } else {
-            LOGGER.debug("Player has no open marbles");
+            LOGGER.info("Player has no open marbles");
             return false;
         }
     }
